@@ -15,8 +15,15 @@ interface Comment {
   replies?: Comment[];
 }
 
+// Helper to check if a string is a valid UUID
+const isValidUUID = (str: string) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
+
 export const usePostInteractions = (postId: string, initialLikes: number) => {
   const { user } = useAuth();
+  const isRealPost = isValidUUID(postId);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(initialLikes);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -24,7 +31,7 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
 
   // Check if user has liked the post
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isRealPost) return;
 
     const checkLiked = async () => {
       const { data } = await supabase
@@ -38,10 +45,12 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
     };
 
     checkLiked();
-  }, [postId, user]);
+  }, [postId, user, isRealPost]);
 
   // Fetch comments
   useEffect(() => {
+    if (!isRealPost) return;
+
     const fetchComments = async () => {
       setLoadingComments(true);
       const { data, error } = await supabase
@@ -117,10 +126,10 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [postId]);
+  }, [postId, isRealPost]);
 
   const toggleLike = async () => {
-    if (!user) return;
+    if (!user || !isRealPost) return;
 
     if (isLiked) {
       // Unlike
@@ -145,7 +154,7 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
   };
 
   const addComment = async (content: string, parentId?: string) => {
-    if (!user || !content.trim()) return;
+    if (!user || !content.trim() || !isRealPost) return;
 
     await supabase.from("comments").insert({
       post_id: postId,
@@ -156,7 +165,7 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
   };
 
   const deleteComment = async (commentId: string) => {
-    if (!user) return;
+    if (!user || !isRealPost) return;
 
     await supabase.from("comments").delete().eq("id", commentId);
 
