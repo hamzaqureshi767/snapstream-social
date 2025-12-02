@@ -14,6 +14,8 @@ const PostCard = ({ post }: PostCardProps) => {
   const [isSaved, setIsSaved] = useState(post.isSaved);
   const [likes, setLikes] = useState(post.likes);
   const [showHeart, setShowHeart] = useState(false);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState(post.comments);
 
   const handleLike = () => {
     if (isLiked) {
@@ -31,6 +33,29 @@ const PostCard = ({ post }: PostCardProps) => {
     }
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 600);
+  };
+
+  const handlePostComment = () => {
+    if (!comment.trim()) return;
+    const newComment = {
+      id: `c-${Date.now()}`,
+      user: {
+        id: "1",
+        username: "you",
+        fullName: "You",
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
+        bio: "",
+        followers: 0,
+        following: 0,
+        postsCount: 0,
+        isFollowing: false,
+      },
+      text: comment,
+      timestamp: new Date(),
+      likes: 0,
+    };
+    setComments([...comments, newComment]);
+    setComment("");
   };
 
   return (
@@ -134,12 +159,12 @@ const PostCard = ({ post }: PostCardProps) => {
         </p>
 
         {/* Comments Link */}
-        {post.comments.length > 0 && (
+        {comments.length > 0 && (
           <Link
             to={`/post/${post.id}`}
             className="text-sm text-muted-foreground mt-1 block"
           >
-            View all {post.comments.length} comments
+            View all {comments.length} comments
           </Link>
         )}
 
@@ -147,6 +172,27 @@ const PostCard = ({ post }: PostCardProps) => {
         <p className="text-xs text-muted-foreground mt-1 uppercase">
           {formatTimestamp(post.timestamp)}
         </p>
+
+        {/* Comment Input */}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
+            placeholder="Add a comment..."
+            className="flex-1 bg-transparent text-sm focus:outline-none"
+          />
+          {comment.trim() && (
+            <button
+              type="button"
+              onClick={handlePostComment}
+              className="text-primary font-semibold text-sm"
+            >
+              Post
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );
