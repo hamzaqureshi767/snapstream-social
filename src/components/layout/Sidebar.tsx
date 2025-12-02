@@ -1,10 +1,29 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, User, Menu } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Menu, Instagram, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/data/mockData";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<{ username: string; avatar: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('username, avatar')
+          .eq('id', user.id)
+          .single();
+        if (data) setProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const navItems = [
     { icon: Home, path: "/", label: "Home" },
@@ -15,12 +34,20 @@ const Sidebar = () => {
     { icon: PlusSquare, path: "/create", label: "Create" },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-[72px] xl:w-[244px] border-r border-border bg-background z-50 p-3 pt-6">
       {/* Logo */}
-      <Link to="/" className="mb-8 px-3">
-        <h1 className="hidden xl:block text-xl font-bold tracking-tight">Instapic</h1>
-        <span className="xl:hidden text-2xl font-bold">📷</span>
+      <Link to="/" className="mb-8 px-3 flex items-center gap-2">
+        <Instagram className="w-6 h-6 xl:hidden" />
+        <div className="hidden xl:flex items-center gap-2">
+          <Instagram className="w-6 h-6" />
+          <h1 className="text-xl font-bold tracking-tight">Instapic</h1>
+        </div>
       </Link>
 
       {/* Navigation */}
@@ -62,8 +89,8 @@ const Sidebar = () => {
           )}
         >
           <img
-            src={currentUser.avatar}
-            alt={currentUser.username}
+            src={profile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+            alt={profile?.username || 'Profile'}
             className={cn(
               "w-6 h-6 rounded-full object-cover transition-transform group-hover:scale-105",
               location.pathname === "/profile" && "ring-2 ring-foreground"
@@ -73,10 +100,13 @@ const Sidebar = () => {
         </Link>
       </nav>
 
-      {/* More */}
-      <button className="flex items-center gap-4 px-3 py-3 rounded-lg transition-colors hover:bg-secondary mt-auto">
-        <Menu className="w-6 h-6" />
-        <span className="hidden xl:block">More</span>
+      {/* Sign Out */}
+      <button 
+        onClick={handleSignOut}
+        className="flex items-center gap-4 px-3 py-3 rounded-lg transition-colors hover:bg-secondary mt-auto"
+      >
+        <LogOut className="w-6 h-6" />
+        <span className="hidden xl:block">Log out</span>
       </button>
     </aside>
   );
