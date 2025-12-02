@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,36 +17,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Prevent double initialization in strict mode
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-
     let mounted = true;
 
-    // Set up auth state listener FIRST
+    // Get initial session first
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (mounted) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    // Set up auth state listener - ONLY react to meaningful events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         if (!mounted) return;
         
-        // Use setTimeout to avoid potential deadlocks with Supabase client
-        setTimeout(() => {
-          if (!mounted) return;
+        // Only update state for actual auth changes, NOT token refreshes
+        // TOKEN_REFRESHED happens frequently and should not trigger re-renders
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
-        }, 0);
+        }
+        
+        // Handle initial session event
+        if (event === 'INITIAL_SESSION') {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setLoading(false);
+        }
       }
     );
-
-    // THEN get the initial session
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      if (!mounted) return;
-      setSession(initialSession);
-      setUser(initialSession?.user ?? null);
-      setLoading(false);
-    });
 
     return () => {
       mounted = false;
@@ -54,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, username: string, fullName: string) => {
+  const signUp = useCallback(async (email: string, password: string, username: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -69,28 +82,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
     return { error };
-  };
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
-    // Immediately update state on successful sign in to prevent race conditions
+    // Immediately update state on successful sign in
     if (!error && data.session) {
       setSession(data.session);
       setUser(data.user);
     }
     
     return { error };
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
+    // Clear state first to prevent flicker
     setSession(null);
     setUser(null);
     await supabase.auth.signOut();
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
