@@ -89,7 +89,14 @@ const Auth = () => {
                 alt="Phone"
                 className="w-full h-full object-contain"
               />
-              {/* Sliding screenshots would go here */}
+              {/* App screenshot inside phone */}
+              <div className="absolute top-[27px] left-[99px] w-[182px] h-[396px] overflow-hidden rounded-[20px]">
+                <img
+                  src="https://static.cdninstagram.com/images/instagram/xig/homepage/phones/home-phones-2x.png"
+                  alt="Instagram app preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
 
