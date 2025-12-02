@@ -7,7 +7,7 @@ const Header = () => {
       <div className="flex items-center justify-between h-14 px-4">
         <Link to="/" className="flex items-center gap-2">
           <Instagram className="w-6 h-6" />
-          <span className="text-xl font-bold tracking-tight">Instapic</span>
+          <span className="text-xl font-bold tracking-tight">Instagram</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link to="/notifications" className="relative">

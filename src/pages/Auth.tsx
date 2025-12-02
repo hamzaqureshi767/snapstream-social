@@ -84,7 +84,7 @@ const Auth = () => {
         <div className="bg-card border border-border rounded-sm p-10 text-center">
           <div className="flex items-center justify-center gap-2 mb-8">
             <Instagram className="w-10 h-10" />
-            <h1 className="text-4xl font-bold tracking-tight">Instapic</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Instagram</h1>
           </div>
           
           {!isLogin && (

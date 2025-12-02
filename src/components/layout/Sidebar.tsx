@@ -46,7 +46,7 @@ const Sidebar = () => {
         <Instagram className="w-6 h-6 xl:hidden" />
         <div className="hidden xl:flex items-center gap-2">
           <Instagram className="w-6 h-6" />
-          <h1 className="text-xl font-bold tracking-tight">Instapic</h1>
+          <h1 className="text-xl font-bold tracking-tight">Instagram</h1>
         </div>
       </Link>
 
