@@ -155,6 +155,23 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
     });
   };
 
+  const deleteComment = async (commentId: string) => {
+    if (!user) return;
+
+    await supabase.from("comments").delete().eq("id", commentId);
+
+    // Update local state
+    setComments((prev) => {
+      // Remove if it's a top-level comment
+      const filtered = prev.filter((c) => c.id !== commentId);
+      // Also remove from replies
+      return filtered.map((c) => ({
+        ...c,
+        replies: c.replies?.filter((r) => r.id !== commentId),
+      }));
+    });
+  };
+
   return {
     isLiked,
     likesCount,
@@ -162,6 +179,8 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
     loadingComments,
     toggleLike,
     addComment,
+    deleteComment,
     isAuthenticated: !!user,
+    currentUserId: user?.id,
   };
 };

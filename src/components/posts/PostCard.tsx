@@ -18,7 +18,9 @@ const PostCard = ({ post }: PostCardProps) => {
     comments,
     toggleLike,
     addComment,
+    deleteComment,
     isAuthenticated,
+    currentUserId,
   } = usePostInteractions(post.id, post.likes);
 
   const [isSaved, setIsSaved] = useState(post.isSaved);
@@ -163,7 +165,9 @@ const PostCard = ({ post }: PostCardProps) => {
             <CommentSection
               comments={comments}
               onAddComment={addComment}
+              onDeleteComment={deleteComment}
               isAuthenticated={isAuthenticated}
+              currentUserId={currentUserId}
             />
           </div>
         )}
