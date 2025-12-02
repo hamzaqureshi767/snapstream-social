@@ -288,7 +288,12 @@ const Messages = () => {
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {filteredUsers.map((profile) => (
+                {!userSearch && (
+                  <p className="text-center text-muted-foreground p-8">
+                    Search for a user to start a conversation
+                  </p>
+                )}
+                {userSearch && filteredUsers.map((profile) => (
                   <button
                     type="button"
                     key={profile.id}
@@ -309,11 +314,6 @@ const Messages = () => {
                 {filteredUsers.length === 0 && userSearch && (
                   <p className="text-center text-muted-foreground p-8">
                     No users found for "{userSearch}"
-                  </p>
-                )}
-                {allUsers.length === 0 && (
-                  <p className="text-center text-muted-foreground p-8">
-                    No other users yet. Invite friends to join!
                   </p>
                 )}
               </div>
