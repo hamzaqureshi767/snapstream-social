@@ -79,27 +79,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col">
       <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="flex items-center gap-8 max-w-[935px]">
-          {/* Phone Mockup - Hidden on mobile */}
-          <div className="hidden lg:block relative">
-            <div className="relative w-[380px] h-[580px]">
-              {/* Phone frame */}
-              <img
-                src="https://static.cdninstagram.com/images/instagram/xig/homepage/phones/home-phones.png?__makehaste_cache_breaker=HOgRclNOosk"
-                alt="Phone"
-                className="w-full h-full object-contain"
-              />
-              {/* App screenshot inside phone */}
-              <div className="absolute top-[27px] left-[99px] w-[182px] h-[396px] overflow-hidden rounded-[20px]">
-                <img
-                  src="https://static.cdninstagram.com/images/instagram/xig/homepage/phones/home-phones-2x.png"
-                  alt="Instagram app preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-
+        <div className="flex items-center justify-center">
           {/* Auth Forms */}
           <div className="w-full max-w-[350px] space-y-3">
             {/* Main Card */}
