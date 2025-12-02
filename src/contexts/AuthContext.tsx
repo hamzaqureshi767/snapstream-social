@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,28 +17,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Get initial session once
-    const initializeAuth = async () => {
-      const { data: { session: initialSession } } = await supabase.auth.getSession();
-      setSession(initialSession);
-      setUser(initialSession?.user ?? null);
-      setLoading(false);
-    };
+    mountedRef.current = true;
+    
+    // Prevent double initialization in StrictMode
+    if (initializedRef.current) {
+      return;
+    }
+    initializedRef.current = true;
 
-    initializeAuth();
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setLoading(false);
+      (event, currentSession) => {
+        if (!mountedRef.current) return;
+        
+        // Use setTimeout to prevent potential deadlocks with Supabase client
+        setTimeout(() => {
+          if (!mountedRef.current) return;
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setLoading(false);
+        }, 0);
       }
     );
 
+    // THEN get initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (!mountedRef.current) return;
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+      setLoading(false);
+    });
+
     return () => {
+      mountedRef.current = false;
       subscription.unsubscribe();
     };
   }, []);
