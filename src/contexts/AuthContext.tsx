@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,42 +17,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Get initial session first
-    const initializeAuth = async () => {
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-      } catch (error) {
-        console.error('Error getting session:', error);
-      } finally {
-        setLoading(false);
-        setInitialized(true);
-      }
-    };
+    // Prevent double initialization in strict mode
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-    initializeAuth();
+    let mounted = true;
 
-    // Set up auth state listener AFTER initialization
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        // Only update state after initial load is complete
-        // This prevents the listener from overwriting the initial session check
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        if (!mounted) return;
         
-        // Handle specific events
-        if (event === 'SIGNED_OUT') {
-          setSession(null);
-          setUser(null);
-        }
+        // Use setTimeout to avoid potential deadlocks with Supabase client
+        setTimeout(() => {
+          if (!mounted) return;
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+        }, 0);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // THEN get the initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (!mounted) return;
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, username: string, fullName: string) => {
@@ -73,14 +72,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    // Immediately update state on successful sign in to prevent race conditions
+    if (!error && data.session) {
+      setSession(data.session);
+      setUser(data.user);
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
+    setSession(null);
+    setUser(null);
     await supabase.auth.signOut();
   };
 
