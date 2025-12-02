@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -20,18 +21,25 @@ interface Comment {
 interface CommentSectionProps {
   comments: Comment[];
   onAddComment: (content: string, parentId?: string) => void;
+  onDeleteComment: (commentId: string) => void;
   isAuthenticated: boolean;
+  currentUserId?: string;
 }
 
 const CommentItem = ({
   comment,
   onReply,
+  onDelete,
   isAuthenticated,
+  currentUserId,
 }: {
   comment: Comment;
   onReply: (parentId: string, username: string) => void;
+  onDelete: (commentId: string) => void;
   isAuthenticated: boolean;
+  currentUserId?: string;
 }) => {
+  const canDelete = currentUserId === comment.user_id;
   return (
     <div className="space-y-2">
       <div className="flex gap-3">
@@ -65,6 +73,15 @@ const CommentItem = ({
                 Reply
               </button>
             )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(comment.id)}
+                className="text-destructive hover:text-destructive/80 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -72,31 +89,45 @@ const CommentItem = ({
       {/* Replies */}
       {comment.replies && comment.replies.length > 0 && (
         <div className="ml-11 space-y-2 border-l-2 border-border pl-3">
-          {comment.replies.map((reply) => (
-            <div key={reply.id} className="flex gap-3">
-              <Link to={`/profile/${reply.profile.username}`}>
-                <img
-                  src={reply.profile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"}
-                  alt={reply.profile.username}
-                  className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                />
-              </Link>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm">
-                  <Link
-                    to={`/profile/${reply.profile.username}`}
-                    className="font-semibold mr-2 hover:underline"
-                  >
-                    {reply.profile.username}
-                  </Link>
-                  {reply.content}
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
-                </span>
+          {comment.replies.map((reply) => {
+            const canDeleteReply = currentUserId === reply.user_id;
+            return (
+              <div key={reply.id} className="flex gap-3">
+                <Link to={`/profile/${reply.profile.username}`}>
+                  <img
+                    src={reply.profile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"}
+                    alt={reply.profile.username}
+                    className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                  />
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm">
+                    <Link
+                      to={`/profile/${reply.profile.username}`}
+                      className="font-semibold mr-2 hover:underline"
+                    >
+                      {reply.profile.username}
+                    </Link>
+                    {reply.content}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>
+                      {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+                    </span>
+                    {canDeleteReply && (
+                      <button
+                        type="button"
+                        onClick={() => onDelete(reply.id)}
+                        className="text-destructive hover:text-destructive/80 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -106,7 +137,9 @@ const CommentItem = ({
 const CommentSection = ({
   comments,
   onAddComment,
+  onDeleteComment,
   isAuthenticated,
+  currentUserId,
 }: CommentSectionProps) => {
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
@@ -133,7 +166,9 @@ const CommentSection = ({
               key={comment.id}
               comment={comment}
               onReply={handleReply}
+              onDelete={onDeleteComment}
               isAuthenticated={isAuthenticated}
+              currentUserId={currentUserId}
             />
           ))}
         </div>
