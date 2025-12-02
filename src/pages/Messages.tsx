@@ -3,7 +3,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Edit, ChevronDown, Phone, Video, Info, ImageIcon, Heart, Send } from "lucide-react";
+import { Edit, ChevronDown, Phone, Video, Info, ImageIcon, Heart, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -225,6 +225,15 @@ const Messages = () => {
     }
   };
 
+  const deleteMessage = async (messageId: string) => {
+    const { error } = await supabase.from('messages').delete().eq('id', messageId);
+    if (error) {
+      toast({ title: "Failed to delete message", variant: "destructive" });
+    } else {
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    }
+  };
+
   const formatTime = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -417,18 +426,29 @@ const Messages = () => {
                   </Link>
                 </div>
 
-                {messages.map((msg) => (
+              {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={cn("flex", msg.sender_id === user?.id ? "justify-end" : "justify-start")}
+                    className={cn("flex group", msg.sender_id === user?.id ? "justify-end" : "justify-start")}
                   >
-                    <div className={cn(
-                      "max-w-[70%] rounded-2xl px-4 py-2",
-                      msg.sender_id === user?.id 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-secondary"
-                    )}>
-                      <p className="text-sm">{msg.content}</p>
+                    <div className="flex items-center gap-2">
+                      {msg.sender_id === user?.id && (
+                        <button
+                          onClick={() => deleteMessage(msg.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
+                          title="Delete message"
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </button>
+                      )}
+                      <div className={cn(
+                        "max-w-[70%] rounded-2xl px-4 py-2",
+                        msg.sender_id === user?.id 
+                          ? "bg-primary text-primary-foreground" 
+                          : "bg-secondary"
+                      )}>
+                        <p className="text-sm">{msg.content}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
