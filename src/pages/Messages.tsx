@@ -40,7 +40,14 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
   const [showNewChat, setShowNewChat] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const filteredUsers = allUsers.filter(
+    (profile) =>
+      profile.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+      (profile.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ?? false)
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -263,16 +270,29 @@ const Messages = () => {
           {showNewChat && (
             <div className="absolute inset-0 bg-background z-50 flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-border">
-                <button onClick={() => setShowNewChat(false)} className="text-sm">Cancel</button>
+                <button type="button" onClick={() => { setShowNewChat(false); setUserSearch(""); }} className="text-sm">Cancel</button>
                 <span className="font-semibold">New message</span>
                 <div className="w-12" />
               </div>
+              <div className="px-4 py-3 border-b border-border">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-semibold">To:</span>
+                  <input
+                    type="text"
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="flex-1 bg-transparent focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+              </div>
               <div className="flex-1 overflow-y-auto">
-                <p className="px-4 py-2 text-sm font-semibold">Suggested</p>
-                {allUsers.map((profile) => (
+                {filteredUsers.map((profile) => (
                   <button
+                    type="button"
                     key={profile.id}
-                    onClick={() => startNewConversation(profile)}
+                    onClick={() => { startNewConversation(profile); setUserSearch(""); }}
                     className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50"
                   >
                     <img
@@ -286,6 +306,11 @@ const Messages = () => {
                     </div>
                   </button>
                 ))}
+                {filteredUsers.length === 0 && userSearch && (
+                  <p className="text-center text-muted-foreground p-8">
+                    No users found for "{userSearch}"
+                  </p>
+                )}
                 {allUsers.length === 0 && (
                   <p className="text-center text-muted-foreground p-8">
                     No other users yet. Invite friends to join!
