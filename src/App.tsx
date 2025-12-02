@@ -20,8 +20,6 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
-  console.log('[ProtectedRoute] user:', !!user, 'loading:', loading);
-  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -31,7 +29,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
-    console.log('[ProtectedRoute] No user, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
   
@@ -40,8 +37,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  
-  console.log('[PublicRoute] user:', !!user, 'loading:', loading);
   
   if (loading) {
     return (
@@ -52,7 +47,6 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (user) {
-    console.log('[PublicRoute] User found, redirecting to /');
     return <Navigate to="/" replace />;
   }
   

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode, useRef } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,46 +13,51 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Track if we've already set up the listener globally
+let globalSubscription: { unsubscribe: () => void } | null = null;
+let globalInitialized = false;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Prevent double initialization in StrictMode
-    if (initializedRef.current) {
-      console.log('[Auth] Already initialized, skipping');
+    // Only initialize once globally
+    if (globalInitialized) {
+      // Still need to sync state if already initialized
+      supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      });
       return;
     }
-    initializedRef.current = true;
-    console.log('[Auth] Initializing auth...');
+    globalInitialized = true;
 
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        console.log('[Auth] onAuthStateChange:', event, 'hasSession:', !!currentSession);
-        
-        // Defer state updates to avoid deadlocks
-        setTimeout(() => {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          setLoading(false);
-        }, 0);
-      }
-    );
-
-    // THEN get initial session
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      console.log('[Auth] getSession result:', !!initialSession);
       setSession(initialSession);
       setUser(initialSession?.user ?? null);
       setLoading(false);
     });
 
+    // Set up auth state listener only once
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        // Only handle meaningful events, ignore TOKEN_REFRESHED to prevent loops
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setLoading(false);
+        }
+      }
+    );
+    
+    globalSubscription = subscription;
+
     return () => {
-      console.log('[Auth] Cleaning up subscription');
-      subscription.unsubscribe();
+      // Don't unsubscribe on unmount to prevent re-subscription loops
     };
   }, []);
 
@@ -74,21 +79,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    console.log('[Auth] signIn called');
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    console.log('[Auth] signIn result:', error ? 'error' : 'success');
+    
+    // Manually update state on successful sign in
+    if (!error && data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+    }
+    
     return { error };
   }, []);
 
   const signOut = useCallback(async () => {
-    console.log('[Auth] signOut called');
     await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
   }, []);
-
-  console.log('[Auth] Render - user:', !!user, 'loading:', loading);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
