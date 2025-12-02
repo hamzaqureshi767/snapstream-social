@@ -122,16 +122,17 @@ const PostCard = ({ post, onDelete }: PostCardProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate(`/post/${post.id}`)}>
-              View post
-            </DropdownMenuItem>
-            {isOwnPost && (
+            {isOwnPost ? (
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete post
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => navigate(`/post/${post.id}`)}>
+                View post
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
