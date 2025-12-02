@@ -4,58 +4,33 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Post, formatTimestamp, formatNumber } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
+import { usePostInteractions } from "@/hooks/usePostInteractions";
+import CommentSection from "./CommentSection";
 
 interface PostCardProps {
   post: Post;
 }
 
 const PostCard = ({ post }: PostCardProps) => {
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  const [isSaved, setIsSaved] = useState(post.isSaved);
-  const [likes, setLikes] = useState(post.likes);
-  const [showHeart, setShowHeart] = useState(false);
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState(post.comments);
+  const {
+    isLiked,
+    likesCount,
+    comments,
+    toggleLike,
+    addComment,
+    isAuthenticated,
+  } = usePostInteractions(post.id, post.likes);
 
-  const handleLike = () => {
-    if (isLiked) {
-      setLikes(likes - 1);
-    } else {
-      setLikes(likes + 1);
-    }
-    setIsLiked(!isLiked);
-  };
+  const [isSaved, setIsSaved] = useState(post.isSaved);
+  const [showHeart, setShowHeart] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   const handleDoubleTap = () => {
-    if (!isLiked) {
-      setIsLiked(true);
-      setLikes(likes + 1);
+    if (!isLiked && isAuthenticated) {
+      toggleLike();
     }
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 600);
-  };
-
-  const handlePostComment = () => {
-    if (!comment.trim()) return;
-    const newComment = {
-      id: `c-${Date.now()}`,
-      user: {
-        id: "1",
-        username: "you",
-        fullName: "You",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
-        bio: "",
-        followers: 0,
-        following: 0,
-        postsCount: 0,
-        isFollowing: false,
-      },
-      text: comment,
-      timestamp: new Date(),
-      likes: 0,
-    };
-    setComments([...comments, newComment]);
-    setComment("");
   };
 
   return (
@@ -116,7 +91,11 @@ const PostCard = ({ post }: PostCardProps) => {
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
-            <button type="button" onClick={handleLike} className="transition-transform hover:scale-110 active:scale-95">
+            <button
+              type="button"
+              onClick={() => isAuthenticated && toggleLike()}
+              className="transition-transform hover:scale-110 active:scale-95"
+            >
               <Heart
                 className={cn(
                   "w-6 h-6 transition-colors",
@@ -124,9 +103,13 @@ const PostCard = ({ post }: PostCardProps) => {
                 )}
               />
             </button>
-            <Link to={`/post/${post.id}`} className="transition-transform hover:scale-110">
+            <button
+              type="button"
+              onClick={() => setShowComments(!showComments)}
+              className="transition-transform hover:scale-110"
+            >
               <MessageCircle className="w-6 h-6" />
-            </Link>
+            </button>
             <button type="button" className="transition-transform hover:scale-110">
               <Send className="w-6 h-6" />
             </button>
@@ -147,7 +130,7 @@ const PostCard = ({ post }: PostCardProps) => {
 
         {/* Likes */}
         <p className="font-semibold text-sm mb-1">
-          {formatNumber(likes)} likes
+          {formatNumber(likesCount)} likes
         </p>
 
         {/* Caption */}
@@ -158,14 +141,15 @@ const PostCard = ({ post }: PostCardProps) => {
           {post.caption}
         </p>
 
-        {/* Comments Link */}
-        {comments.length > 0 && (
-          <Link
-            to={`/post/${post.id}`}
-            className="text-sm text-muted-foreground mt-1 block"
+        {/* Comments toggle */}
+        {comments.length > 0 && !showComments && (
+          <button
+            type="button"
+            onClick={() => setShowComments(true)}
+            className="text-sm text-muted-foreground mt-1 block hover:text-foreground transition-colors"
           >
             View all {comments.length} comments
-          </Link>
+          </button>
         )}
 
         {/* Timestamp */}
@@ -173,26 +157,28 @@ const PostCard = ({ post }: PostCardProps) => {
           {formatTimestamp(post.timestamp)}
         </p>
 
-        {/* Comment Input */}
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-          <input
-            type="text"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
-            placeholder="Add a comment..."
-            className="flex-1 bg-transparent text-sm focus:outline-none"
-          />
-          {comment.trim() && (
-            <button
-              type="button"
-              onClick={handlePostComment}
-              className="text-primary font-semibold text-sm"
-            >
-              Post
-            </button>
-          )}
-        </div>
+        {/* Comment Section */}
+        {showComments && (
+          <div className="mt-3">
+            <CommentSection
+              comments={comments}
+              onAddComment={addComment}
+              isAuthenticated={isAuthenticated}
+            />
+          </div>
+        )}
+
+        {/* Quick comment input when comments are hidden */}
+        {!showComments && isAuthenticated && (
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              className="flex-1 bg-transparent text-sm focus:outline-none"
+              onFocus={() => setShowComments(true)}
+            />
+          </div>
+        )}
       </div>
     </article>
   );
