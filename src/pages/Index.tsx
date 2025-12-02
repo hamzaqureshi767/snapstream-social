@@ -10,16 +10,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<{ username: string; full_name: string | null; avatar: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ username: string; full_name: string | null; avatar: string | null } | null>(
+    null,
+  );
   const [followedUsers, setFollowedUsers] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
         const { data } = await supabase
-          .from('profiles')
-          .select('username, full_name, avatar')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("username, full_name, avatar")
+          .eq("id", user.id)
           .single();
         if (data) setProfile(data);
       }
@@ -28,11 +30,7 @@ const Index = () => {
   }, [user]);
 
   const handleFollow = (userId: string) => {
-    setFollowedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
+    setFollowedUsers((prev) => (prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]));
   };
 
   return (
@@ -51,32 +49,35 @@ const Index = () => {
             <div className="flex items-center gap-3 mb-6">
               <Link to="/profile">
                 <img
-                  src={profile?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"}
+                  src={
+                    profile?.avatar ||
+                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"
+                  }
                   alt="Your profile"
                   className="w-11 h-11 rounded-full object-cover"
                 />
               </Link>
               <div className="flex-1">
-                <Link to="/profile" className="font-semibold text-sm">{profile?.username || 'yourprofile'}</Link>
-                <p className="text-sm text-muted-foreground">{profile?.full_name || 'Your Name'}</p>
+                <Link to="/profile" className="font-semibold text-sm">
+                  {profile?.username || "yourprofile"}
+                </Link>
+                <p className="text-sm text-muted-foreground">{profile?.full_name || "Your Name"}</p>
               </div>
             </div>
 
             {/* Suggestions */}
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-semibold text-muted-foreground">Suggested for you</span>
-              <Button type="button" variant="link" className="text-xs p-0 h-auto text-foreground">See All</Button>
+              <Button type="button" variant="link" className="text-xs p-0 h-auto text-foreground">
+                See All
+              </Button>
             </div>
 
             <div className="space-y-3">
               {users.slice(0, 5).map((user) => (
                 <div key={user.id} className="flex items-center gap-3">
                   <Link to={`/profile/${user.username}`}>
-                    <img
-                      src={user.avatar}
-                      alt={user.username}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
+                    <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full object-cover" />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link
@@ -86,21 +87,19 @@ const Index = () => {
                       {user.username}
                       {user.isVerified && (
                         <svg className="w-3 h-3 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                         </svg>
                       )}
                     </Link>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {formatNumber(user.followers)} followers
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{formatNumber(user.followers)} followers</p>
                   </div>
-                  <Button 
+                  <Button
                     type="button"
-                    variant="link" 
+                    variant="link"
                     className="text-xs p-0 h-auto"
                     onClick={() => handleFollow(user.id)}
                   >
-                    {followedUsers.includes(user.id) ? 'Following' : 'Follow'}
+                    {followedUsers.includes(user.id) ? "Following" : "Follow"}
                   </Button>
                 </div>
               ))}
@@ -117,7 +116,7 @@ const Index = () => {
                 <span className="hover:underline cursor-pointer">Privacy</span> ·
                 <span className="hover:underline cursor-pointer">Terms</span>
               </nav>
-              <p>© 2024 INSTAGRAM</p>
+              <p>© 2025 INSTAGRAM</p>
             </footer>
           </div>
         </aside>
