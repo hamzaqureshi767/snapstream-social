@@ -87,7 +87,7 @@ const Auth = () => {
               {/* Instagram Logo */}
               <div className="flex justify-center mb-8">
                 <h1 
-                  className="text-[52px] text-[#262626] tracking-tight"
+                  className="text-[52px] bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] bg-clip-text text-transparent tracking-tight"
                   style={{ fontFamily: "'Satisfy', cursive" }}
                 >
                   Instagram
