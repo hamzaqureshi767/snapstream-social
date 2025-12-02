@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import EditProfileDialog from "./EditProfileDialog";
 
 interface ProfileHeaderProps {
   user: User;
@@ -20,6 +21,13 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
   const [activeTab, setActiveTab] = useState<"posts" | "saved" | "tagged">("posts");
   const [isUploading, setIsUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(user.avatar);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [profileData, setProfileData] = useState({
+    username: user.username,
+    fullName: user.fullName,
+    bio: user.bio,
+    website: user.website || "",
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +133,9 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
               )}
               {isOwnProfile ? (
                 <>
-                  <Button variant="secondary" size="sm">Edit profile</Button>
+                  <Button variant="secondary" size="sm" onClick={() => setShowEditDialog(true)}>
+                    Edit profile
+                  </Button>
                   <Button variant="secondary" size="sm">View archive</Button>
                 </>
               ) : (
@@ -151,16 +161,16 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
 
             {/* Bio - Desktop */}
             <div className="hidden md:block">
-              <p className="font-semibold">{user.fullName}</p>
-              <p className="whitespace-pre-wrap">{user.bio}</p>
-              {user.website && (
+              <p className="font-semibold">{profileData.fullName}</p>
+              <p className="whitespace-pre-wrap">{profileData.bio}</p>
+              {profileData.website && (
                 <a
-                  href={`https://${user.website}`}
+                  href={`https://${profileData.website}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary font-semibold hover:underline"
                 >
-                  {user.website}
+                  {profileData.website}
                 </a>
               )}
             </div>
@@ -169,16 +179,16 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
 
         {/* Mobile Bio */}
         <div className="md:hidden mt-4">
-          <p className="font-semibold">{user.fullName}</p>
-          <p className="whitespace-pre-wrap text-sm">{user.bio}</p>
-          {user.website && (
+          <p className="font-semibold">{profileData.fullName}</p>
+          <p className="whitespace-pre-wrap text-sm">{profileData.bio}</p>
+          {profileData.website && (
             <a
-              href={`https://${user.website}`}
+              href={`https://${profileData.website}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary font-semibold text-sm hover:underline"
             >
-              {user.website}
+              {profileData.website}
             </a>
           )}
         </div>
@@ -187,7 +197,9 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
         <div className="md:hidden flex gap-2 mt-4">
           {isOwnProfile ? (
             <>
-              <Button variant="secondary" size="sm" className="flex-1">Edit profile</Button>
+              <Button variant="secondary" size="sm" className="flex-1" onClick={() => setShowEditDialog(true)}>
+                Edit profile
+              </Button>
               <Button variant="secondary" size="sm" className="flex-1">Share profile</Button>
             </>
           ) : (
@@ -266,6 +278,16 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
           <span className="hidden md:inline text-xs uppercase tracking-wider font-semibold">Tagged</span>
         </button>
       </div>
+
+      {/* Edit Profile Dialog */}
+      {isOwnProfile && (
+        <EditProfileDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          profile={profileData}
+          onProfileUpdate={(updated) => setProfileData(updated)}
+        />
+      )}
     </div>
   );
 };
