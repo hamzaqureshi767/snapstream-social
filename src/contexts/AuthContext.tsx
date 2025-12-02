@@ -17,26 +17,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const mountedRef = useRef(true);
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    mountedRef.current = true;
-    
     // Prevent double initialization in StrictMode
     if (initializedRef.current) {
+      console.log('[Auth] Already initialized, skipping');
       return;
     }
     initializedRef.current = true;
+    console.log('[Auth] Initializing auth...');
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        if (!mountedRef.current) return;
+        console.log('[Auth] onAuthStateChange:', event, 'hasSession:', !!currentSession);
         
-        // Use setTimeout to prevent potential deadlocks with Supabase client
+        // Defer state updates to avoid deadlocks
         setTimeout(() => {
-          if (!mountedRef.current) return;
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
           setLoading(false);
@@ -46,14 +44,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // THEN get initial session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      if (!mountedRef.current) return;
+      console.log('[Auth] getSession result:', !!initialSession);
       setSession(initialSession);
       setUser(initialSession?.user ?? null);
       setLoading(false);
     });
 
     return () => {
-      mountedRef.current = false;
+      console.log('[Auth] Cleaning up subscription');
       subscription.unsubscribe();
     };
   }, []);
@@ -76,16 +74,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
+    console.log('[Auth] signIn called');
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    console.log('[Auth] signIn result:', error ? 'error' : 'success');
     return { error };
   }, []);
 
   const signOut = useCallback(async () => {
+    console.log('[Auth] signOut called');
     await supabase.auth.signOut();
   }, []);
+
+  console.log('[Auth] Render - user:', !!user, 'loading:', loading);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
