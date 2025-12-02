@@ -84,6 +84,7 @@ const Messages = () => {
       const conversationIds = participantData.map(p => p.conversation_id);
 
       const convos: Conversation[] = [];
+      const seenParticipants = new Set<string>();
       
       for (const convId of conversationIds) {
         // Get other participant
@@ -92,9 +93,11 @@ const Messages = () => {
           .select('user_id')
           .eq('conversation_id', convId)
           .neq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (otherParticipant) {
+        if (otherParticipant && !seenParticipants.has(otherParticipant.user_id)) {
+          seenParticipants.add(otherParticipant.user_id);
+          
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
