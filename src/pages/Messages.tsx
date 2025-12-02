@@ -69,68 +69,126 @@ const Messages = () => {
     if (user) fetchUsers();
   }, [user]);
 
-  // Fetch conversations
+  // Fetch conversations - optimized to reduce API calls
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchConversations = async () => {
       if (!user) return;
 
-      const { data: participantData } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', user.id);
-
-      if (!participantData || participantData.length === 0) return;
-
-      const conversationIds = participantData.map(p => p.conversation_id);
-
-      const convos: Conversation[] = [];
-      const seenParticipants = new Set<string>();
-      
-      for (const convId of conversationIds) {
-        // Get other participant
-        const { data: otherParticipant } = await supabase
+      try {
+        // Get all conversation IDs the user is part of
+        const { data: participantData, error: participantError } = await supabase
           .from('conversation_participants')
-          .select('user_id')
-          .eq('conversation_id', convId)
-          .neq('user_id', user.id)
-          .maybeSingle();
+          .select('conversation_id')
+          .eq('user_id', user.id);
 
-        if (otherParticipant && !seenParticipants.has(otherParticipant.user_id)) {
-          seenParticipants.add(otherParticipant.user_id);
+        if (participantError || !participantData || participantData.length === 0) return;
+
+        const conversationIds = participantData.map(p => p.conversation_id);
+
+        // Get all participants for these conversations in one query
+        const { data: allParticipants, error: allParticipantsError } = await supabase
+          .from('conversation_participants')
+          .select('conversation_id, user_id')
+          .in('conversation_id', conversationIds)
+          .neq('user_id', user.id);
+
+        if (allParticipantsError || !allParticipants) return;
+
+        // Get unique other user IDs
+        const otherUserIds = [...new Set(allParticipants.map(p => p.user_id))];
+        
+        if (otherUserIds.length === 0) return;
+
+        // Fetch all profiles in one query
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', otherUserIds);
+
+        if (profilesError || !profiles) return;
+
+        // Create a map for quick lookup
+        const profileMap = new Map(profiles.map(p => [p.id, p]));
+        const convParticipantMap = new Map<string, string>();
+        
+        // Map conversation to other participant (use first one found per conversation)
+        for (const p of allParticipants) {
+          if (!convParticipantMap.has(p.conversation_id)) {
+            convParticipantMap.set(p.conversation_id, p.user_id);
+          }
+        }
+
+        // Build conversations without fetching messages individually
+        const convos: Conversation[] = [];
+        const seenParticipants = new Set<string>();
+
+        for (const convId of conversationIds) {
+          const otherUserId = convParticipantMap.get(convId);
+          if (!otherUserId || seenParticipants.has(otherUserId)) continue;
           
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', otherParticipant.user_id)
-            .single();
+          const profile = profileMap.get(otherUserId);
+          if (!profile) continue;
 
+          seenParticipants.add(otherUserId);
+          convos.push({
+            id: convId,
+            participant: profile,
+            lastMessage: undefined,
+            lastMessageTime: undefined,
+            unread: false,
+          });
+        }
+
+        if (!isMounted) return;
+        setConversations(convos);
+
+        // Fetch last messages in parallel (limited batch)
+        const messagePromises = convos.slice(0, 20).map(async (conv) => {
           const { data: lastMsg } = await supabase
             .from('messages')
-            .select('*')
-            .eq('conversation_id', convId)
+            .select('content, created_at, is_read, sender_id')
+            .eq('conversation_id', conv.id)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
+          
+          return { convId: conv.id, lastMsg };
+        });
 
-          if (profile) {
-            convos.push({
-              id: convId,
-              participant: profile,
-              lastMessage: lastMsg?.content,
-              lastMessageTime: lastMsg ? new Date(lastMsg.created_at) : undefined,
-              unread: lastMsg ? !lastMsg.is_read && lastMsg.sender_id !== user.id : false,
-            });
-          }
-        }
+        const messageResults = await Promise.all(messagePromises);
+        
+        if (!isMounted) return;
+
+        setConversations(prev => {
+          const updated = prev.map(conv => {
+            const result = messageResults.find(r => r.convId === conv.id);
+            if (result?.lastMsg) {
+              return {
+                ...conv,
+                lastMessage: result.lastMsg.content,
+                lastMessageTime: new Date(result.lastMsg.created_at),
+                unread: !result.lastMsg.is_read && result.lastMsg.sender_id !== user.id,
+              };
+            }
+            return conv;
+          });
+          return updated.sort((a, b) => 
+            (b.lastMessageTime?.getTime() || 0) - (a.lastMessageTime?.getTime() || 0)
+          );
+        });
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
       }
-
-      setConversations(convos.sort((a, b) => 
-        (b.lastMessageTime?.getTime() || 0) - (a.lastMessageTime?.getTime() || 0)
-      ));
     };
 
     fetchConversations();
-  }, [user]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   // Fetch messages for selected conversation
   useEffect(() => {
