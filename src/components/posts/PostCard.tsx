@@ -1,17 +1,38 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Post, formatTimestamp, formatNumber } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
 import CommentSection from "./CommentSection";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PostCardProps {
   post: Post;
+  onDelete?: (postId: string) => void;
 }
 
-const PostCard = ({ post }: PostCardProps) => {
+const PostCard = ({ post, onDelete }: PostCardProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     isLiked,
     likesCount,
@@ -26,6 +47,10 @@ const PostCard = ({ post }: PostCardProps) => {
   const [isSaved, setIsSaved] = useState(post.isSaved);
   const [showHeart, setShowHeart] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const isOwnPost = currentUserId === post.user.id;
 
   const handleDoubleTap = () => {
     if (!isLiked && isAuthenticated) {
@@ -33,6 +58,33 @@ const PostCard = ({ post }: PostCardProps) => {
     }
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 600);
+  };
+
+  const handleDeletePost = async () => {
+    if (!currentUserId) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("posts")
+        .delete()
+        .eq("id", post.id)
+        .eq("user_id", currentUserId);
+
+      if (error) throw error;
+
+      toast({ title: "Post deleted successfully" });
+      onDelete?.(post.id);
+    } catch (error: any) {
+      toast({
+        title: "Failed to delete post",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   return (
@@ -63,10 +115,49 @@ const PostCard = ({ post }: PostCardProps) => {
             )}
           </div>
         </Link>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal className="w-5 h-5" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => navigate(`/post/${post.id}`)}>
+              View post
+            </DropdownMenuItem>
+            {isOwnPost && (
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete post
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your post.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Image */}
       <div

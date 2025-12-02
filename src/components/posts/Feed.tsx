@@ -91,6 +91,10 @@ const Feed = () => {
     );
   }
 
+  const handleDeletePost = (postId: string) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
   // Show real posts if available, otherwise show mock posts
   if (posts.length === 0) {
     return (
@@ -129,6 +133,7 @@ const Feed = () => {
             isLiked: false,
             isSaved: false,
           }}
+          onDelete={handleDeletePost}
         />
       ))}
     </div>
