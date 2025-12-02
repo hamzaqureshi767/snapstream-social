@@ -103,8 +103,15 @@ const Profile = () => {
     ? users.find((u) => u.username === username) || currentUser
     : currentUser;
 
-  const displayPosts = userPosts.length > 0
-    ? userPosts.map((p) => ({
+  const [postsList, setPostsList] = useState(userPosts);
+
+  // Update postsList when userPosts changes
+  useEffect(() => {
+    setPostsList(userPosts);
+  }, [userPosts]);
+
+  const displayPosts = postsList.length > 0
+    ? postsList.map((p) => ({
         id: p.id,
         user: displayUser,
         image: p.image_url,
@@ -116,6 +123,10 @@ const Profile = () => {
         isSaved: false,
       }))
     : mockPosts.filter((p) => p.user.id === displayUser.id).slice(0, 6);
+
+  const handlePostDelete = (postId: string) => {
+    setPostsList((prev) => prev.filter((p) => p.id !== postId));
+  };
 
   if (loading) {
     return (
@@ -139,7 +150,11 @@ const Profile = () => {
     <MainLayout showHeader={false}>
       <div className="max-w-4xl mx-auto">
         <ProfileHeader user={displayUser} isOwnProfile={!!isOwnProfile} />
-        <ProfileGrid posts={displayPosts} />
+        <ProfileGrid 
+          posts={displayPosts} 
+          isOwnProfile={!!isOwnProfile}
+          onPostDelete={handlePostDelete}
+        />
       </div>
     </MainLayout>
   );
