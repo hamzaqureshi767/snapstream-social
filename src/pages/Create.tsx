@@ -2,22 +2,27 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
-import { ImageIcon, MapPin, ChevronLeft, X } from "lucide-react";
-import { currentUser } from "@/data/mockData";
+import { ImageIcon, MapPin, ChevronLeft, X, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Create = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<"select" | "caption">("select");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [location, setLocation] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
@@ -27,12 +32,57 @@ const Create = () => {
     }
   };
 
-  const handleShare = () => {
-    toast({
-      title: "Post shared!",
-      description: "Your post has been shared successfully.",
-    });
-    navigate("/");
+  const handleShare = async () => {
+    if (!user || !selectedFile) {
+      toast({ title: "Please select an image", variant: "destructive" });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Upload image to storage
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('uploads')
+        .upload(fileName, selectedFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(fileName);
+
+      // Create post in database
+      const { error: postError } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          image_url: publicUrl,
+          caption: caption.trim() || null,
+          location: location.trim() || null,
+        });
+
+      if (postError) throw postError;
+
+      toast({
+        title: "Post shared!",
+        description: "Your post has been shared successfully.",
+      });
+      navigate("/");
+    } catch (error: any) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error sharing post",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -46,14 +96,19 @@ const Create = () => {
                 <X className="w-6 h-6" />
               </button>
             ) : (
-              <button onClick={() => setStep("select")}>
+              <button onClick={() => setStep("select")} disabled={isUploading}>
                 <ChevronLeft className="w-6 h-6" />
               </button>
             )}
             <h1 className="font-semibold">Create new post</h1>
             {step === "caption" ? (
-              <Button variant="link" onClick={handleShare} className="text-primary font-semibold">
-                Share
+              <Button 
+                variant="link" 
+                onClick={handleShare} 
+                className="text-primary font-semibold"
+                disabled={isUploading}
+              >
+                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Share"}
               </Button>
             ) : (
               <div className="w-12" />
@@ -73,7 +128,7 @@ const Create = () => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,video/*"
+                accept="image/*"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -95,12 +150,8 @@ const Create = () => {
               {/* Caption Form */}
               <div className="md:w-1/2 p-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <img
-                    src={currentUser.avatar}
-                    alt={currentUser.username}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <span className="font-semibold text-sm">{currentUser.username}</span>
+                  <div className="w-8 h-8 rounded-full bg-muted" />
+                  <span className="font-semibold text-sm">You</span>
                 </div>
 
                 <textarea
@@ -109,6 +160,7 @@ const Create = () => {
                   placeholder="Write a caption..."
                   className="w-full h-40 bg-transparent resize-none focus:outline-none text-sm"
                   maxLength={2200}
+                  disabled={isUploading}
                 />
                 <div className="text-right text-xs text-muted-foreground mb-4">
                   {caption.length}/2,200
@@ -122,6 +174,7 @@ const Create = () => {
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="Add location"
                       className="flex-1 bg-transparent focus:outline-none text-sm"
+                      disabled={isUploading}
                     />
                     <MapPin className="w-5 h-5 text-muted-foreground" />
                   </div>

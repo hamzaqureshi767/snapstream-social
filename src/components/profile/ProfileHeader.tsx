@@ -1,17 +1,66 @@
-import { useState } from "react";
-import { Settings, Grid3X3, Bookmark, UserSquare2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Settings, Grid3X3, Bookmark, UserSquare2, Camera, Loader2 } from "lucide-react";
 import { User, formatNumber } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProfileHeaderProps {
   user: User;
   isOwnProfile?: boolean;
+  onAvatarUpdate?: (newUrl: string) => void;
 }
 
-const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
+const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHeaderProps) => {
+  const { user: authUser } = useAuth();
+  const { toast } = useToast();
   const [isFollowing, setIsFollowing] = useState(user.isFollowing);
   const [activeTab, setActiveTab] = useState<"posts" | "saved" | "tagged">("posts");
+  const [isUploading, setIsUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${authUser.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('uploads')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(fileName);
+
+      // Add cache-busting query param
+      const newAvatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+      // Update profile in database
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar: newAvatarUrl })
+        .eq('id', authUser.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(newAvatarUrl);
+      onAvatarUpdate?.(newAvatarUrl);
+      toast({ title: "Profile picture updated!" });
+    } catch (error: any) {
+      toast({ title: "Failed to update picture", description: error.message, variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="bg-background">
@@ -29,12 +78,38 @@ const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
         <div className="flex gap-6 md:gap-20">
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-20 h-20 md:w-36 md:h-36 rounded-full overflow-hidden ring-2 ring-border">
-              <img
-                src={user.avatar}
-                alt={user.username}
-                className="w-full h-full object-cover"
-              />
+            <div className="relative group">
+              <div className="w-20 h-20 md:w-36 md:h-36 rounded-full overflow-hidden ring-2 ring-border">
+                {isUploading ? (
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <img
+                    src={avatarUrl}
+                    alt={user.username}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              {isOwnProfile && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Camera className="w-6 h-6 text-white" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </>
+              )}
             </div>
           </div>
 
