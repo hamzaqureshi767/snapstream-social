@@ -177,36 +177,51 @@ const Messages = () => {
     if (existing) {
       setSelectedConversation(existing);
       setShowNewChat(false);
+      setUserSearch("");
       return;
     }
 
-    // Create new conversation
-    const { data: conv, error: convError } = await supabase
-      .from('conversations')
-      .insert({})
-      .select()
-      .single();
+    try {
+      // Generate conversation ID client-side to avoid RLS select issue
+      const conversationId = crypto.randomUUID();
 
-    if (convError || !conv) {
-      toast({ title: "Error creating conversation", variant: "destructive" });
-      return;
+      // Create new conversation
+      const { error: convError } = await supabase
+        .from('conversations')
+        .insert({ id: conversationId });
+
+      if (convError) {
+        console.error('Error creating conversation:', convError);
+        toast({ title: "Error creating conversation", variant: "destructive" });
+        return;
+      }
+
+      // Add participants - current user first
+      const { error: participantError } = await supabase.from('conversation_participants').insert([
+        { conversation_id: conversationId, user_id: user.id },
+        { conversation_id: conversationId, user_id: otherUser.id },
+      ]);
+
+      if (participantError) {
+        console.error('Error adding participants:', participantError);
+        toast({ title: "Error starting conversation", variant: "destructive" });
+        return;
+      }
+
+      const newConvo: Conversation = {
+        id: conversationId,
+        participant: otherUser,
+        unread: false,
+      };
+
+      setConversations(prev => [newConvo, ...prev]);
+      setSelectedConversation(newConvo);
+      setShowNewChat(false);
+      setUserSearch("");
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast({ title: "Something went wrong", variant: "destructive" });
     }
-
-    // Add participants
-    await supabase.from('conversation_participants').insert([
-      { conversation_id: conv.id, user_id: user.id },
-      { conversation_id: conv.id, user_id: otherUser.id },
-    ]);
-
-    const newConvo: Conversation = {
-      id: conv.id,
-      participant: otherUser,
-      unread: false,
-    };
-
-    setConversations(prev => [newConvo, ...prev]);
-    setSelectedConversation(newConvo);
-    setShowNewChat(false);
   };
 
   const sendMessage = async () => {
