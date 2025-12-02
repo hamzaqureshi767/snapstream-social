@@ -14,6 +14,7 @@ const StoryCircle = ({ story, isOwn = false, onClick }: StoryCircleProps) => {
 
   return (
     <button
+      type="button"
       onClick={onClick}
       className="flex flex-col items-center gap-1 min-w-[76px] group"
     >

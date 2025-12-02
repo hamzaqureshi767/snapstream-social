@@ -40,6 +40,7 @@ const PostDetail = () => {
         <div className="bg-background md:border md:border-border md:rounded-lg md:overflow-hidden md:max-w-5xl md:w-full md:flex">
           {/* Close button - Mobile */}
           <button
+            type="button"
             onClick={() => navigate(-1)}
             className="absolute top-4 right-4 z-10 md:hidden"
           >
@@ -120,11 +121,11 @@ const PostDetail = () => {
                     </p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span>{formatTimestamp(c.timestamp)}</span>
-                      <button className="font-semibold">{c.likes} likes</button>
-                      <button className="font-semibold">Reply</button>
+                      <button type="button" className="font-semibold">{c.likes} likes</button>
+                      <button type="button" className="font-semibold">Reply</button>
                     </div>
                   </div>
-                  <button className="self-center">
+                  <button type="button" className="self-center">
                     <Heart className="w-3 h-3" />
                   </button>
                 </div>
@@ -135,7 +136,7 @@ const PostDetail = () => {
             <div className="border-t border-border p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-4">
-                  <button onClick={handleLike}>
+                  <button type="button" onClick={handleLike}>
                     <Heart
                       className={cn(
                         "w-6 h-6",
@@ -143,14 +144,14 @@ const PostDetail = () => {
                       )}
                     />
                   </button>
-                  <button>
+                  <button type="button">
                     <MessageCircle className="w-6 h-6" />
                   </button>
-                  <button>
+                  <button type="button">
                     <Send className="w-6 h-6" />
                   </button>
                 </div>
-                <button onClick={() => setIsSaved(!isSaved)}>
+                <button type="button" onClick={() => setIsSaved(!isSaved)}>
                   <Bookmark className={cn("w-6 h-6", isSaved && "fill-foreground")} />
                 </button>
               </div>
@@ -170,7 +171,7 @@ const PostDetail = () => {
                 className="flex-1 bg-transparent text-sm focus:outline-none"
               />
               {comment && (
-                <button className="text-primary font-semibold text-sm">
+                <button type="button" className="text-primary font-semibold text-sm">
                   Post
                 </button>
               )}
