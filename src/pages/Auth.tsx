@@ -29,9 +29,9 @@ const Auth = () => {
             description: error.message,
             variant: "destructive",
           });
-        } else {
-          navigate("/");
+          setLoading(false);
         }
+        // Don't navigate manually - let PublicRoute handle redirect when auth state updates
       } else {
         if (!username.trim()) {
           toast({
@@ -57,12 +57,13 @@ const Auth = () => {
               variant: "destructive",
             });
           }
+          setLoading(false);
         } else {
           toast({
             title: "Account created!",
             description: "You can now sign in with your credentials.",
           });
-          navigate("/");
+          // Don't navigate manually - let PublicRoute handle redirect when auth state updates
         }
       }
     } catch (error: any) {
@@ -71,7 +72,6 @@ const Auth = () => {
         description: error.message,
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
