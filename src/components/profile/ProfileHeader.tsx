@@ -70,8 +70,8 @@ const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
             {/* Stats - Desktop */}
             <div className="hidden md:flex gap-8 mb-4">
               <span><strong>{user.postsCount}</strong> posts</span>
-              <button className="hover:opacity-70"><strong>{formatNumber(user.followers)}</strong> followers</button>
-              <button className="hover:opacity-70"><strong>{formatNumber(user.following)}</strong> following</button>
+              <button type="button" className="hover:opacity-70"><strong>{formatNumber(user.followers)}</strong> followers</button>
+              <button type="button" className="hover:opacity-70"><strong>{formatNumber(user.following)}</strong> following</button>
             </div>
 
             {/* Bio - Desktop */}
@@ -136,11 +136,11 @@ const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
             <p className="font-semibold">{user.postsCount}</p>
             <p className="text-xs text-muted-foreground">posts</p>
           </div>
-          <button className="text-center">
+          <button type="button" className="text-center">
             <p className="font-semibold">{formatNumber(user.followers)}</p>
             <p className="text-xs text-muted-foreground">followers</p>
           </button>
-          <button className="text-center">
+          <button type="button" className="text-center">
             <p className="font-semibold">{formatNumber(user.following)}</p>
             <p className="text-xs text-muted-foreground">following</p>
           </button>
@@ -150,6 +150,7 @@ const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
       {/* Tabs */}
       <div className="flex border-t border-border">
         <button
+          type="button"
           onClick={() => setActiveTab("posts")}
           className={cn(
             "flex-1 md:flex-none flex items-center justify-center gap-2 py-3 md:px-12 border-t transition-colors",
@@ -163,6 +164,7 @@ const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
         </button>
         {isOwnProfile && (
           <button
+            type="button"
             onClick={() => setActiveTab("saved")}
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2 py-3 md:px-12 border-t transition-colors",
@@ -176,6 +178,7 @@ const ProfileHeader = ({ user, isOwnProfile = false }: ProfileHeaderProps) => {
           </button>
         )}
         <button
+          type="button"
           onClick={() => setActiveTab("tagged")}
           className={cn(
             "flex-1 md:flex-none flex items-center justify-center gap-2 py-3 md:px-12 border-t transition-colors",

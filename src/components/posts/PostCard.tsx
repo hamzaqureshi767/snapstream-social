@@ -91,7 +91,7 @@ const PostCard = ({ post }: PostCardProps) => {
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
-            <button onClick={handleLike} className="transition-transform hover:scale-110 active:scale-95">
+            <button type="button" onClick={handleLike} className="transition-transform hover:scale-110 active:scale-95">
               <Heart
                 className={cn(
                   "w-6 h-6 transition-colors",
@@ -102,11 +102,12 @@ const PostCard = ({ post }: PostCardProps) => {
             <Link to={`/post/${post.id}`} className="transition-transform hover:scale-110">
               <MessageCircle className="w-6 h-6" />
             </Link>
-            <button className="transition-transform hover:scale-110">
+            <button type="button" className="transition-transform hover:scale-110">
               <Send className="w-6 h-6" />
             </button>
           </div>
           <button
+            type="button"
             onClick={() => setIsSaved(!isSaved)}
             className="transition-transform hover:scale-110 active:scale-95"
           >
