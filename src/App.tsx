@@ -14,6 +14,7 @@ import Create from "./pages/Create";
 import PostDetail from "./pages/PostDetail";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import SavedPosts from "./pages/SavedPosts";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const AppRoutes = () => (
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/profile/:username" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/post/:id" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
+    <Route path="/saved" element={<ProtectedRoute><SavedPosts /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
