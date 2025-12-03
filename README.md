@@ -1,73 +1,38 @@
-# Welcome to your Lovable project
+# Snapstream Social
 
-## Project info
+An Instagram-inspired social experience built with React, TypeScript, Tailwind CSS, and shadcn/ui. The app showcases feeds, stories, messaging previews, Supabase-powered authentication, and a polished mobile-responsive layout.
 
-**URL**: https://lovable.dev/projects/9270ad7b-6f78-48f4-9f48-3407df1ce582
+## Features
 
-## How can I edit this code?
+- Responsive layout with header, sidebar, and bottom navigation
+- Feed with posts, stories carousel, reactions, comments, and save states
+- Profile editing with dialog-based form and grid/gallery views
+- Explore/search experiences plus notifications and messaging placeholders
+- Supabase client integration for future data persistence
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- React 18 + Vite + TypeScript
+- Tailwind CSS with shadcn/ui component library
+- Radix UI primitives, lucide icons, TanStack Query
+- Supabase JS SDK for authentication and storage hooks
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9270ad7b-6f78-48f4-9f48-3407df1ce582) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The development server runs on `http://localhost:5173`. Update the Supabase credentials in `supabase/config.toml` as needed before deploying or wiring up live data.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Available Scripts
 
-**Use GitHub Codespaces**
+- `npm run dev` – start the Vite dev server
+- `npm run build` – create a production build
+- `npm run preview` – preview the production build locally
+- `npm run lint` – run ESLint across the project
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Deployment
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/9270ad7b-6f78-48f4-9f48-3407df1ce582) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Any static hosting platform that supports Vite builds (e.g., Netlify, Vercel, Render) will work. Build the project, serve the contents of `dist/`, and configure environment variables for Supabase before deploying.
