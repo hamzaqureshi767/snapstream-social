@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Post, formatTimestamp, formatNumber } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { usePostInteractions } from "@/hooks/usePostInteractions";
+import { useSavedPosts } from "@/hooks/useSavedPosts";
 import CommentSection from "./CommentSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -44,13 +45,28 @@ const PostCard = ({ post, onDelete }: PostCardProps) => {
     currentUserId,
   } = usePostInteractions(post.id, post.likes);
 
-  const [isSaved, setIsSaved] = useState(post.isSaved);
+  // Check if post ID is a valid UUID for save functionality
+  const isRealPost = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.id);
+  const { isSaved: dbSaved, toggleSave } = useSavedPosts(isRealPost ? post.id : undefined);
+  
+  // Local state for mock posts
+  const [localSaved, setLocalSaved] = useState(post.isSaved);
+  const isSaved = isRealPost ? dbSaved : localSaved;
+
   const [showHeart, setShowHeart] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwnPost = currentUserId === post.user.id;
+
+  const handleSave = () => {
+    if (isRealPost) {
+      toggleSave();
+    } else {
+      setLocalSaved((prev) => !prev);
+    }
+  };
 
   const handleDoubleTap = () => {
     if (!isLiked && isAuthenticated) {
@@ -210,7 +226,7 @@ const PostCard = ({ post, onDelete }: PostCardProps) => {
           </div>
           <button
             type="button"
-            onClick={() => setIsSaved(!isSaved)}
+            onClick={handleSave}
             className="transition-transform hover:scale-110 active:scale-95"
           >
             <Bookmark

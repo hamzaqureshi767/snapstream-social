@@ -1,4 +1,4 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Menu, Instagram, LogOut } from "lucide-react";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, Instagram, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +32,7 @@ const Sidebar = () => {
     { icon: MessageCircle, path: "/messages", label: "Messages" },
     { icon: Heart, path: "/notifications", label: "Notifications" },
     { icon: PlusSquare, path: "/create", label: "Create" },
+    { icon: Bookmark, path: "/saved", label: "Saved" },
   ];
 
   const handleSignOut = async () => {
