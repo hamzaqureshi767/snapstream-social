@@ -29,7 +29,7 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
 
-  // Check if user has liked the post
+  // Check if user has liked the post (real posts only)
   useEffect(() => {
     if (!user || !isRealPost) return;
 
@@ -47,7 +47,7 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
     checkLiked();
   }, [postId, user, isRealPost]);
 
-  // Fetch comments
+  // Fetch comments (real posts only)
   useEffect(() => {
     if (!isRealPost) return;
 
@@ -129,8 +129,16 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
   }, [postId, isRealPost]);
 
   const toggleLike = async () => {
-    if (!user || !isRealPost) return;
+    if (!user) return;
 
+    // For mock posts, just toggle local state
+    if (!isRealPost) {
+      setIsLiked((prev) => !prev);
+      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      return;
+    }
+
+    // For real posts, update database
     if (isLiked) {
       // Unlike
       await supabase
@@ -154,8 +162,37 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
   };
 
   const addComment = async (content: string, parentId?: string) => {
-    if (!user || !content.trim() || !isRealPost) return;
+    if (!user || !content.trim()) return;
 
+    // For mock posts, add comment locally
+    if (!isRealPost) {
+      const newComment: Comment = {
+        id: `mock-${Date.now()}`,
+        content: content.trim(),
+        created_at: new Date().toISOString(),
+        user_id: user.id,
+        parent_id: parentId || null,
+        profile: {
+          username: user.email?.split("@")[0] || "user",
+          avatar: null,
+        },
+        replies: [],
+      };
+
+      setComments((prev) => {
+        if (parentId) {
+          return prev.map((c) =>
+            c.id === parentId
+              ? { ...c, replies: [...(c.replies || []), newComment] }
+              : c
+          );
+        }
+        return [...prev, newComment];
+      });
+      return;
+    }
+
+    // For real posts, save to database
     await supabase.from("comments").insert({
       post_id: postId,
       user_id: user.id,
@@ -165,8 +202,21 @@ export const usePostInteractions = (postId: string, initialLikes: number) => {
   };
 
   const deleteComment = async (commentId: string) => {
-    if (!user || !isRealPost) return;
+    if (!user) return;
 
+    // For mock posts, remove locally
+    if (!isRealPost || commentId.startsWith("mock-")) {
+      setComments((prev) => {
+        const filtered = prev.filter((c) => c.id !== commentId);
+        return filtered.map((c) => ({
+          ...c,
+          replies: c.replies?.filter((r) => r.id !== commentId),
+        }));
+      });
+      return;
+    }
+
+    // For real posts, delete from database
     await supabase.from("comments").delete().eq("id", commentId);
 
     // Update local state
