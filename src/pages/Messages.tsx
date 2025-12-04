@@ -386,9 +386,10 @@ const Messages = () => {
                     className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50"
                   >
                     <img
-                      src={profile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                      src={profile.avatar || '/default-avatar.jpg'}
                       alt={profile.username}
                       className="w-12 h-12 rounded-full object-cover"
+                      onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                     />
                     <div className="text-left">
                       <p className="font-semibold text-sm">{profile.username}</p>
@@ -427,9 +428,10 @@ const Messages = () => {
                 >
                   <div className="relative">
                     <img
-                      src={conv.participant.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                      src={conv.participant.avatar || '/default-avatar.jpg'}
                       alt={conv.participant.username}
                       className="w-14 h-14 rounded-full object-cover"
+                      onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                     />
                     {conv.unread && (
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background" />
@@ -468,9 +470,10 @@ const Messages = () => {
                   </button>
                   <Link to={`/profile/${selectedConversation.participant.username}`} className="flex items-center gap-3">
                     <img
-                      src={selectedConversation.participant.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                      src={selectedConversation.participant.avatar || '/default-avatar.jpg'}
                       alt={selectedConversation.participant.username}
                       className="w-11 h-11 rounded-full object-cover"
+                      onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                     />
                     <div>
                       <p className="font-semibold text-sm">{selectedConversation.participant.username}</p>
@@ -489,9 +492,10 @@ const Messages = () => {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 <div className="flex flex-col items-center py-8">
                   <img
-                    src={selectedConversation.participant.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                    src={selectedConversation.participant.avatar || '/default-avatar.jpg'}
                     alt={selectedConversation.participant.username}
                     className="w-24 h-24 rounded-full object-cover mb-4"
+                    onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                   />
                   <p className="font-semibold">{selectedConversation.participant.full_name || selectedConversation.participant.username}</p>
                   <p className="text-sm text-muted-foreground mb-4">

@@ -91,7 +91,7 @@ const Profile = () => {
         id: profile.id,
         username: profile.username,
         fullName: profile.full_name || "",
-        avatar: profile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
+        avatar: profile.avatar || "/default-avatar.jpg",
         bio: profile.bio || "",
         website: profile.website || "",
         followers: 0,

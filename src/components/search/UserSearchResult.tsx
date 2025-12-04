@@ -12,9 +12,10 @@ const UserSearchResult = ({ user }: UserSearchResultProps) => {
       className="flex items-center gap-3 p-3 hover:bg-secondary transition-colors rounded-lg"
     >
       <img
-        src={user.avatar}
+        src={user.avatar || '/default-avatar.jpg'}
         alt={user.username}
         className="w-11 h-11 rounded-full object-cover"
+        onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1">

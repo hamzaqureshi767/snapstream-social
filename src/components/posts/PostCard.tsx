@@ -111,9 +111,10 @@ const PostCard = ({ post, onDelete }: PostCardProps) => {
           <div className="story-ring">
             <div className="story-ring-inner">
               <img
-                src={post.user.avatar}
+                src={post.user.avatar || '/default-avatar.jpg'}
                 alt={post.user.username}
                 className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
               />
             </div>
           </div>

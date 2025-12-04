@@ -26,12 +26,13 @@ const StoryCircle = ({ story, isOwn = false, onClick }: StoryCircleProps) => {
           !isViewed && !isOwn && "story-ring-inner"
         )}>
           <img
-            src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"}
+            src={user?.avatar || "/default-avatar.jpg"}
             alt={user?.username || "Your story"}
             className={cn(
               "w-14 h-14 md:w-16 md:h-16 rounded-full object-cover transition-transform group-hover:scale-105",
               isViewed && "opacity-60"
             )}
+            onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
           />
         </div>
         {isOwn && (

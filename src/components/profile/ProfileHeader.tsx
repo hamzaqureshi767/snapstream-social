@@ -94,9 +94,10 @@ const ProfileHeader = ({ user, isOwnProfile = false, onAvatarUpdate }: ProfileHe
                   </div>
                 ) : (
                   <img
-                    src={avatarUrl}
+                    src={avatarUrl || '/default-avatar.jpg'}
                     alt={user.username}
                     className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                   />
                 )}
               </div>

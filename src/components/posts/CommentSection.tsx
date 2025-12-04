@@ -45,9 +45,10 @@ const CommentItem = ({
       <div className="flex gap-3">
         <Link to={`/profile/${comment.profile.username}`}>
           <img
-            src={comment.profile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"}
+            src={comment.profile.avatar || "/default-avatar.jpg"}
             alt={comment.profile.username}
             className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+            onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
           />
         </Link>
         <div className="flex-1 min-w-0">
@@ -95,9 +96,10 @@ const CommentItem = ({
               <div key={reply.id} className="flex gap-3">
                 <Link to={`/profile/${reply.profile.username}`}>
                   <img
-                    src={reply.profile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"}
+                    src={reply.profile.avatar || "/default-avatar.jpg"}
                     alt={reply.profile.username}
                     className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                    onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                   />
                 </Link>
                 <div className="flex-1 min-w-0">

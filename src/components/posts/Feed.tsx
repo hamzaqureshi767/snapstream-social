@@ -117,7 +117,7 @@ const Feed = () => {
               id: post.profile.id,
               username: post.profile.username,
               fullName: post.profile.full_name || '',
-              avatar: post.profile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+              avatar: post.profile.avatar || '/default-avatar.jpg',
               bio: '',
               followers: 0,
               following: 0,
