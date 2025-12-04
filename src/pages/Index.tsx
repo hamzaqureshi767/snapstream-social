@@ -49,12 +49,10 @@ const Index = () => {
             <div className="flex items-center gap-3 mb-6">
               <Link to="/profile">
                 <img
-                  src={
-                    profile?.avatar ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"
-                  }
+                  src={profile?.avatar || "/default-avatar.jpg"}
                   alt="Your profile"
                   className="w-11 h-11 rounded-full object-cover"
+                  onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                 />
               </Link>
               <div className="flex-1">

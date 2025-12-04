@@ -45,7 +45,7 @@ export const currentUser: User = {
   id: "1",
   username: "yourprofile",
   fullName: "Your Name",
-  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
+  avatar: "/default-avatar.jpg",
   bio: "Digital creator ✨ Living life one post at a time",
   website: "yourwebsite.com",
   followers: 1234,

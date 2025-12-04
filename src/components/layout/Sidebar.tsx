@@ -90,12 +90,13 @@ const Sidebar = () => {
           )}
         >
           <img
-            src={profile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+            src={profile?.avatar || '/default-avatar.jpg'}
             alt={profile?.username || 'Profile'}
             className={cn(
               "w-6 h-6 rounded-full object-cover transition-transform group-hover:scale-105",
               location.pathname === "/profile" && "ring-2 ring-foreground"
             )}
+            onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
           />
           <span className="hidden xl:block">Profile</span>
         </Link>
