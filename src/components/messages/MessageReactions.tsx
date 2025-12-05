@@ -90,7 +90,7 @@ export const MessageReactions = ({ messageId, isOwnMessage }: MessageReactionsPr
   }, {} as Record<string, string[]>);
 
   return (
-    <div className={cn("flex items-center gap-1", isOwnMessage ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn("flex items-center gap-1 group/reaction", isOwnMessage ? "flex-row-reverse" : "flex-row")}>
       {/* Display existing reactions */}
       {Object.entries(groupedReactions).map(([emoji, userIds]) => (
         <button
@@ -108,7 +108,7 @@ export const MessageReactions = ({ messageId, isOwnMessage }: MessageReactionsPr
       {/* Add reaction button */}
       <Popover open={showPicker} onOpenChange={setShowPicker}>
         <PopoverTrigger asChild>
-          <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded">
+          <button className="opacity-50 hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded">
             <Smile className="w-4 h-4 text-muted-foreground" />
           </button>
         </PopoverTrigger>
