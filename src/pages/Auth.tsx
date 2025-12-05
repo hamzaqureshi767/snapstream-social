@@ -77,13 +77,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="flex items-center justify-center">
           {/* Auth Forms */}
           <div className="w-full max-w-[350px] space-y-3">
             {/* Main Card */}
-            <div className="bg-white border border-[#dbdbdb] rounded-sm px-10 py-10">
+            <div className="bg-card border border-border rounded-sm px-10 py-10">
               {/* Instagram Logo */}
               <div className="flex justify-center mb-8">
                 <h1 
@@ -95,7 +95,7 @@ const Auth = () => {
               </div>
 
               {!isLogin && (
-                <p className="text-[#737373] text-center font-semibold mb-4 text-[17px]">
+                <p className="text-muted-foreground text-center font-semibold mb-4 text-[17px]">
                   Sign up to see photos and videos from your friends.
                 </p>
               )}
@@ -107,7 +107,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-[#fafafa] border-[#dbdbdb] h-[38px] text-xs rounded-[3px] focus-visible:ring-0 focus-visible:border-[#a8a8a8]"
+                  className="bg-secondary border-border h-[38px] text-sm rounded-[3px] text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:border-primary"
                 />
                 {!isLogin && (
                   <>
@@ -116,7 +116,7 @@ const Auth = () => {
                       placeholder="Full Name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="bg-[#fafafa] border-[#dbdbdb] h-[38px] text-xs rounded-[3px] focus-visible:ring-0 focus-visible:border-[#a8a8a8]"
+                      className="bg-secondary border-border h-[38px] text-sm rounded-[3px] text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:border-primary"
                     />
                     <Input
                       type="text"
@@ -124,7 +124,7 @@ const Auth = () => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required
-                      className="bg-[#fafafa] border-[#dbdbdb] h-[38px] text-xs rounded-[3px] focus-visible:ring-0 focus-visible:border-[#a8a8a8]"
+                      className="bg-secondary border-border h-[38px] text-sm rounded-[3px] text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:border-primary"
                     />
                   </>
                 )}
@@ -135,11 +135,11 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="bg-[#fafafa] border-[#dbdbdb] h-[38px] text-xs rounded-[3px] focus-visible:ring-0 focus-visible:border-[#a8a8a8]"
+                  className="bg-secondary border-border h-[38px] text-sm rounded-[3px] text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:border-primary"
                 />
                 <Button
                   type="submit"
-                  className="w-full bg-[#0095f6] hover:bg-[#1877f2] text-white font-semibold h-8 rounded-lg text-sm mt-2"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-8 rounded-lg text-sm mt-2"
                   disabled={loading || !email || !password}
                 >
                   {loading ? "Please wait..." : isLogin ? "Log in" : "Sign up"}
@@ -148,13 +148,13 @@ const Auth = () => {
 
               {/* Divider */}
               <div className="flex items-center my-5">
-                <div className="flex-1 h-px bg-[#dbdbdb]" />
-                <span className="px-4 text-[13px] font-semibold text-[#737373]">OR</span>
-                <div className="flex-1 h-px bg-[#dbdbdb]" />
+                <div className="flex-1 h-px bg-border" />
+                <span className="px-4 text-[13px] font-semibold text-muted-foreground">OR</span>
+                <div className="flex-1 h-px bg-border" />
               </div>
 
               {/* Facebook Login */}
-              <button className="w-full flex items-center justify-center gap-2 text-[#385185] font-semibold text-sm mb-4">
+              <button className="w-full flex items-center justify-center gap-2 text-primary font-semibold text-sm mb-4">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
@@ -162,26 +162,26 @@ const Auth = () => {
               </button>
 
               {isLogin && (
-                <button className="w-full text-center text-xs text-[#00376b]">
+                <button className="w-full text-center text-xs text-primary">
                   Forgot password?
                 </button>
               )}
 
               {!isLogin && (
-                <p className="text-xs text-[#737373] text-center mt-4">
+                <p className="text-xs text-muted-foreground text-center mt-4">
                   People who use our service may have uploaded your contact information to Instagram.{" "}
-                  <a href="#" className="text-[#00376b]">Learn More</a>
+                  <a href="#" className="text-primary">Learn More</a>
                 </p>
               )}
             </div>
 
             {/* Toggle Card */}
-            <div className="bg-white border border-[#dbdbdb] rounded-sm p-5 text-center">
-              <p className="text-sm">
+            <div className="bg-card border border-border rounded-sm p-5 text-center">
+              <p className="text-sm text-foreground">
                 {isLogin ? "Don't have an account?" : "Have an account?"}{" "}
                 <button
                   onClick={() => setIsLogin(!isLogin)}
-                  className="text-[#0095f6] font-semibold"
+                  className="text-primary font-semibold"
                 >
                   {isLogin ? "Sign up" : "Log in"}
                 </button>
@@ -190,7 +190,7 @@ const Auth = () => {
 
             {/* App Download */}
             <div className="text-center py-3">
-              <p className="text-sm mb-4">Get the app.</p>
+              <p className="text-sm text-foreground mb-4">Get the app.</p>
               <div className="flex justify-center gap-2">
                 <a href="#">
                   <img
@@ -215,7 +215,7 @@ const Auth = () => {
       {/* Footer */}
       <footer className="py-6 px-4">
         <div className="max-w-[1024px] mx-auto">
-          <nav className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-[#737373] mb-4">
+          <nav className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground mb-4">
             <a href="#">Meta</a>
             <a href="#">About</a>
             <a href="#">Blog</a>
@@ -230,7 +230,7 @@ const Auth = () => {
             <a href="#">Contact Uploading & Non-Users</a>
             <a href="#">Meta Verified</a>
           </nav>
-          <div className="flex justify-center gap-4 text-xs text-[#737373]">
+          <div className="flex justify-center gap-4 text-xs text-muted-foreground">
             <select className="bg-transparent border-none outline-none cursor-pointer">
               <option>English</option>
             </select>
