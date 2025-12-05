@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,10 @@ import { Edit, ChevronDown, Phone, Video, Info, ImageIcon, Heart, Send, Trash2 }
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { usePresence } from "@/hooks/usePresence";
+import { MessageReactions } from "@/components/messages/MessageReactions";
+import { TypingIndicator } from "@/components/messages/TypingIndicator";
+import { OnlineIndicator } from "@/components/messages/OnlineIndicator";
 
 interface Profile {
   id: string;
@@ -42,6 +46,9 @@ const Messages = () => {
   const [showNewChat, setShowNewChat] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { isUserOnline, isUserTyping, setTyping } = usePresence(selectedConversation?.id);
 
   const filteredUsers = allUsers.filter(
     (profile) =>
@@ -285,8 +292,25 @@ const Messages = () => {
     }
   };
 
+  const handleTyping = useCallback(() => {
+    setTyping(true);
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      setTyping(false);
+    }, 2000);
+  }, [setTyping]);
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || !user) return;
+
+    setTyping(false);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
     const { error } = await supabase.from('messages').insert({
       conversation_id: selectedConversation.id,
@@ -433,7 +457,8 @@ const Messages = () => {
                       className="w-14 h-14 rounded-full object-cover"
                       onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
                     />
-                    {conv.unread && (
+                    <OnlineIndicator isOnline={isUserOnline(conv.participant.id)} size="md" />
+                    {conv.unread && !isUserOnline(conv.participant.id) && (
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background" />
                     )}
                   </div>
@@ -469,15 +494,24 @@ const Messages = () => {
                     ←
                   </button>
                   <Link to={`/profile/${selectedConversation.participant.username}`} className="flex items-center gap-3">
-                    <img
-                      src={selectedConversation.participant.avatar || '/default-avatar.jpg'}
-                      alt={selectedConversation.participant.username}
-                      className="w-11 h-11 rounded-full object-cover"
-                      onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
-                    />
+                    <div className="relative">
+                      <img
+                        src={selectedConversation.participant.avatar || '/default-avatar.jpg'}
+                        alt={selectedConversation.participant.username}
+                        className="w-11 h-11 rounded-full object-cover"
+                        onError={(e) => { e.currentTarget.src = '/default-avatar.jpg'; }}
+                      />
+                      <OnlineIndicator isOnline={isUserOnline(selectedConversation.participant.id)} size="sm" />
+                    </div>
                     <div>
                       <p className="font-semibold text-sm">{selectedConversation.participant.username}</p>
-                      <p className="text-xs text-muted-foreground">Active now</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isUserTyping(selectedConversation.participant.id) 
+                          ? "Typing..." 
+                          : isUserOnline(selectedConversation.participant.id) 
+                            ? "Active now" 
+                            : "Offline"}
+                      </p>
                     </div>
                   </Link>
                 </div>
@@ -509,29 +543,40 @@ const Messages = () => {
               {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={cn("flex group", msg.sender_id === user?.id ? "justify-end" : "justify-start")}
+                    className={cn("flex flex-col gap-1", msg.sender_id === user?.id ? "items-end" : "items-start")}
                   >
-                    <div className="flex items-center gap-2">
-                      {msg.sender_id === user?.id && (
-                        <button
-                          onClick={() => deleteMessage(msg.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
-                          title="Delete message"
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </button>
-                      )}
-                      <div className={cn(
-                        "max-w-[70%] rounded-2xl px-4 py-2",
-                        msg.sender_id === user?.id 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-secondary"
-                      )}>
-                        <p className="text-sm">{msg.content}</p>
+                    <div className={cn("flex group", msg.sender_id === user?.id ? "flex-row-reverse" : "flex-row")}>
+                      <div className="flex items-center gap-2">
+                        {msg.sender_id === user?.id && (
+                          <button
+                            onClick={() => deleteMessage(msg.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
+                            title="Delete message"
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </button>
+                        )}
+                        <div className={cn(
+                          "max-w-[70%] rounded-2xl px-4 py-2",
+                          msg.sender_id === user?.id 
+                            ? "bg-primary text-primary-foreground" 
+                            : "bg-secondary"
+                        )}>
+                          <p className="text-sm">{msg.content}</p>
+                        </div>
+                        <MessageReactions messageId={msg.id} isOwnMessage={msg.sender_id === user?.id} />
                       </div>
                     </div>
                   </div>
                 ))}
+                
+                {/* Typing Indicator */}
+                {selectedConversation && isUserTyping(selectedConversation.participant.id) && (
+                  <div className="flex justify-start">
+                    <TypingIndicator />
+                  </div>
+                )}
+                
                 <div ref={messagesEndRef} />
               </div>
 
@@ -542,7 +587,10 @@ const Messages = () => {
                   <input
                     type="text"
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      handleTyping();
+                    }}
                     onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                     placeholder="Message..."
                     className="flex-1 bg-transparent text-sm focus:outline-none"
