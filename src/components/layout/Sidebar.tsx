@@ -1,10 +1,11 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, Instagram, LogOut, Moon, Sun } from "lucide-react";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, LogOut, Moon, Sun } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "next-themes";
+import InstagramLogo from "@/components/icons/InstagramLogo";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -46,10 +47,12 @@ const Sidebar = () => {
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-[72px] xl:w-[244px] border-r border-border bg-background z-50 p-3 pt-6">
       {/* Logo */}
       <Link to="/" className="mb-8 px-3 flex items-center gap-2">
-        <Instagram className="w-6 h-6 xl:hidden" />
-        <div className="hidden xl:flex items-center gap-2">
-          <Instagram className="w-6 h-6" />
-          <h1 className="text-xl font-bold tracking-tight">Instagram</h1>
+        <InstagramLogo size={28} className="xl:hidden" />
+        <div className="hidden xl:flex items-center gap-3">
+          <InstagramLogo size={32} />
+          <span className="text-2xl font-semibold bg-gradient-to-r from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] bg-clip-text text-transparent">
+            Instagram
+          </span>
         </div>
       </Link>
 
