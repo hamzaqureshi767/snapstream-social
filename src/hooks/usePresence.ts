@@ -1,16 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface PresenceState {
-  onlineUsers: Set<string>;
-  typingUsers: Map<string, string>; // conversationId -> comma-separated user ids
-}
 
 export const usePresence = (conversationId?: string) => {
   const { user, loading } = useAuth();
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+  const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Track online status - only when user is loaded and authenticated
   useEffect(() => {
@@ -52,11 +48,16 @@ export const usePresence = (conversationId?: string) => {
 
   // Track typing status for a conversation
   useEffect(() => {
-    if (loading || !user?.id || !conversationId) return;
+    if (loading || !user?.id || !conversationId) {
+      typingChannelRef.current = null;
+      return;
+    }
 
     const channel = supabase.channel(`typing-${conversationId}`, {
       config: { presence: { key: user.id } }
     });
+
+    typingChannelRef.current = channel;
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -74,14 +75,18 @@ export const usePresence = (conversationId?: string) => {
 
     return () => {
       supabase.removeChannel(channel);
+      typingChannelRef.current = null;
     };
   }, [user?.id, conversationId, loading]);
 
   const setTyping = useCallback(async (isTyping: boolean) => {
-    if (!user?.id || !conversationId) return;
-
-    const channel = supabase.channel(`typing-${conversationId}`);
-    await channel.track({ typing: isTyping });
+    if (!user?.id || !conversationId || !typingChannelRef.current) return;
+    
+    try {
+      await typingChannelRef.current.track({ typing: isTyping });
+    } catch (error) {
+      // Ignore errors when channel is not ready
+    }
   }, [user?.id, conversationId]);
 
   const isUserOnline = useCallback((userId: string) => {
