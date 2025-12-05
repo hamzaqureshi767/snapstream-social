@@ -436,7 +436,7 @@ const Messages = () => {
               <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                 <Send className="w-12 h-12 mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No messages yet</p>
-                <Button className="mt-4" onClick={() => setShowNewChat(true)}>
+                <Button variant="action" className="mt-4" onClick={() => setShowNewChat(true)}>
                   Start a conversation
                 </Button>
               </div>
