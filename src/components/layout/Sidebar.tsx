@@ -1,14 +1,16 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, Instagram, LogOut } from "lucide-react";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, Instagram, LogOut, Moon, Sun } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "next-themes";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<{ username: string; avatar: string | null } | null>(null);
 
   useEffect(() => {
@@ -102,10 +104,19 @@ const Sidebar = () => {
         </Link>
       </nav>
 
+      {/* Theme Toggle */}
+      <button 
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        className="flex items-center gap-4 px-3 py-3 rounded-lg transition-colors hover:bg-secondary"
+      >
+        {theme === 'dark' ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+        <span className="hidden xl:block">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+      </button>
+
       {/* Sign Out */}
       <button 
         onClick={handleSignOut}
-        className="flex items-center gap-4 px-3 py-3 rounded-lg transition-colors hover:bg-secondary mt-auto"
+        className="flex items-center gap-4 px-3 py-3 rounded-lg transition-colors hover:bg-secondary"
       >
         <LogOut className="w-6 h-6" />
         <span className="hidden xl:block">Log out</span>
