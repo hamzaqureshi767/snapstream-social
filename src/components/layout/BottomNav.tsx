@@ -1,16 +1,17 @@
-import { Home, Search, PlusSquare, Bookmark, User } from "lucide-react";
+import { Home, Search, PlusSquare, Bookmark, User, Moon, Sun } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 const BottomNav = () => {
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
 
   const navItems = [
     { icon: Home, path: "/", label: "Home" },
     { icon: Search, path: "/search", label: "Search" },
     { icon: PlusSquare, path: "/create", label: "Create" },
     { icon: Bookmark, path: "/saved", label: "Saved" },
-    { icon: User, path: "/profile", label: "Profile" },
   ];
 
   return (
@@ -39,6 +40,15 @@ const BottomNav = () => {
             </Link>
           );
         })}
+        
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="flex items-center justify-center w-full h-full text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+        </button>
       </div>
     </nav>
   );
