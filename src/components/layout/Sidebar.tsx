@@ -54,7 +54,7 @@ const Sidebar = () => {
       </Link>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 space-y-1 overflow-y-auto scrollbar-hide">
         {navItems.map(({ icon: Icon, path, label }) => {
           const isActive = location.pathname === path;
           return (
