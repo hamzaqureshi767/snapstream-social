@@ -8,13 +8,13 @@ interface PresenceState {
 }
 
 export const usePresence = (conversationId?: string) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
 
-  // Track online status
+  // Track online status - only when user is loaded and authenticated
   useEffect(() => {
-    if (!user) return;
+    if (loading || !user?.id) return;
 
     const channel = supabase.channel('online-users', {
       config: { presence: { key: user.id } }
@@ -48,11 +48,11 @@ export const usePresence = (conversationId?: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, loading]);
 
   // Track typing status for a conversation
   useEffect(() => {
-    if (!user || !conversationId) return;
+    if (loading || !user?.id || !conversationId) return;
 
     const channel = supabase.channel(`typing-${conversationId}`, {
       config: { presence: { key: user.id } }
@@ -75,10 +75,10 @@ export const usePresence = (conversationId?: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, conversationId]);
+  }, [user?.id, conversationId, loading]);
 
   const setTyping = useCallback(async (isTyping: boolean) => {
-    if (!user || !conversationId) return;
+    if (!user?.id || !conversationId) return;
 
     const channel = supabase.channel(`typing-${conversationId}`);
     await channel.track({ typing: isTyping });
