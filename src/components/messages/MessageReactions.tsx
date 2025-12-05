@@ -23,11 +23,14 @@ interface MessageReactionsProps {
 const EMOJI_OPTIONS = ["❤️", "😂", "😮", "😢", "😡", "👍"];
 
 export const MessageReactions = ({ messageId, isOwnMessage }: MessageReactionsProps) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
+    // Don't fetch if auth is still loading or no user
+    if (loading || !user) return;
+
     const fetchReactions = async () => {
       const { data } = await supabase
         .from('message_reactions')
@@ -37,28 +40,7 @@ export const MessageReactions = ({ messageId, isOwnMessage }: MessageReactionsPr
     };
 
     fetchReactions();
-
-    // Subscribe to reaction changes
-    const channel = supabase
-      .channel(`reactions-${messageId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'message_reactions',
-          filter: `message_id=eq.${messageId}`,
-        },
-        () => {
-          fetchReactions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [messageId]);
+  }, [messageId, user, loading]);
 
   const toggleReaction = async (emoji: string) => {
     if (!user) return;
@@ -70,14 +52,20 @@ export const MessageReactions = ({ messageId, isOwnMessage }: MessageReactionsPr
         .from('message_reactions')
         .delete()
         .eq('id', existing.id);
+      setReactions(prev => prev.filter(r => r.id !== existing.id));
     } else {
-      await supabase
+      const { data } = await supabase
         .from('message_reactions')
         .insert({
           message_id: messageId,
           user_id: user.id,
           emoji,
-        });
+        })
+        .select()
+        .single();
+      if (data) {
+        setReactions(prev => [...prev, data]);
+      }
     }
     setShowPicker(false);
   };
