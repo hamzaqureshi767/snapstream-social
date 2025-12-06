@@ -60,14 +60,14 @@ const Sidebar = () => {
         </svg>
         {/* Mobile icon */}
         <div className="relative xl:hidden">
-          <Instagram className="w-7 h-7" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
-          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
+          <Instagram className="w-8 h-8" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
+          <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full" style={{ background: 'linear-gradient(45deg, hsl(280, 87%, 65%), hsl(348, 83%, 60%), hsl(25, 95%, 60%), hsl(45, 95%, 55%))' }} />
         </div>
         {/* Desktop icon + text */}
         <div className="hidden xl:flex items-center gap-3">
           <div className="relative">
-            <Instagram className="w-8 h-8" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
-            <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
+            <Instagram className="w-9 h-9" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
+            <div className="absolute top-2 right-2 w-1 h-1 rounded-full" style={{ background: 'linear-gradient(45deg, hsl(280, 87%, 65%), hsl(348, 83%, 60%), hsl(25, 95%, 60%), hsl(45, 95%, 55%))' }} />
           </div>
           <span className="text-2xl font-semibold bg-gradient-to-r from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] via-[hsl(25,100%,55%)] to-[hsl(45,100%,55%)] bg-clip-text text-transparent">
             Instagram
