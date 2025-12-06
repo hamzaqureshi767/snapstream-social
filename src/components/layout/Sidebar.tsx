@@ -45,21 +45,31 @@ const Sidebar = () => {
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-[72px] xl:w-[244px] border-r border-border bg-background z-50 p-3 pt-6">
       {/* Logo */}
+      {/* Logo */}
       <Link to="/" className="mb-8 px-3 flex items-center gap-2">
-        <Instagram className="w-6 h-6 xl:hidden stroke-[url(#story-gradient)]" style={{ stroke: 'url(#story-gradient)' }} />
         <svg width="0" height="0" className="absolute">
           <defs>
             <linearGradient id="story-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(280, 87%, 65%)" />
-              <stop offset="33%" stopColor="hsl(348, 83%, 60%)" />
-              <stop offset="66%" stopColor="hsl(25, 95%, 60%)" />
-              <stop offset="100%" stopColor="hsl(45, 95%, 55%)" />
+              <stop offset="0%" stopColor="hsl(280, 87%, 70%)" />
+              <stop offset="25%" stopColor="hsl(330, 90%, 60%)" />
+              <stop offset="50%" stopColor="hsl(348, 90%, 55%)" />
+              <stop offset="75%" stopColor="hsl(25, 100%, 55%)" />
+              <stop offset="100%" stopColor="hsl(45, 100%, 55%)" />
             </linearGradient>
           </defs>
         </svg>
+        {/* Mobile icon */}
+        <div className="relative xl:hidden">
+          <Instagram className="w-7 h-7" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
+          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
+        </div>
+        {/* Desktop icon + text */}
         <div className="hidden xl:flex items-center gap-3">
-          <Instagram className="w-7 h-7" style={{ stroke: 'url(#story-gradient)' }} />
-          <span className="text-2xl font-semibold bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,83%,60%)] via-[hsl(25,95%,60%)] to-[hsl(45,95%,55%)] bg-clip-text text-transparent">
+          <div className="relative">
+            <Instagram className="w-8 h-8" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
+          </div>
+          <span className="text-2xl font-semibold bg-gradient-to-r from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] via-[hsl(25,100%,55%)] to-[hsl(45,100%,55%)] bg-clip-text text-transparent">
             Instagram
           </span>
         </div>
