@@ -1,11 +1,10 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, LogOut, Moon, Sun } from "lucide-react";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, Bookmark, Instagram, LogOut, Moon, Sun } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "next-themes";
-import InstagramLogo from "@/components/icons/InstagramLogo";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -47,10 +46,20 @@ const Sidebar = () => {
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-[72px] xl:w-[244px] border-r border-border bg-background z-50 p-3 pt-6">
       {/* Logo */}
       <Link to="/" className="mb-8 px-3 flex items-center gap-2">
-        <InstagramLogo size={28} className="xl:hidden" />
+        <Instagram className="w-6 h-6 xl:hidden stroke-[url(#story-gradient)]" style={{ stroke: 'url(#story-gradient)' }} />
+        <svg width="0" height="0" className="absolute">
+          <defs>
+            <linearGradient id="story-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(280, 87%, 65%)" />
+              <stop offset="33%" stopColor="hsl(348, 83%, 60%)" />
+              <stop offset="66%" stopColor="hsl(25, 95%, 60%)" />
+              <stop offset="100%" stopColor="hsl(45, 95%, 55%)" />
+            </linearGradient>
+          </defs>
+        </svg>
         <div className="hidden xl:flex items-center gap-3">
-          <InstagramLogo size={32} />
-          <span className="text-2xl font-semibold bg-gradient-to-r from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] bg-clip-text text-transparent">
+          <Instagram className="w-7 h-7" style={{ stroke: 'url(#story-gradient)' }} />
+          <span className="text-2xl font-semibold bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,83%,60%)] via-[hsl(25,95%,60%)] to-[hsl(45,95%,55%)] bg-clip-text text-transparent">
             Instagram
           </span>
         </div>
