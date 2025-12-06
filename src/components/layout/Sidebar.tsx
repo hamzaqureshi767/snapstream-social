@@ -61,13 +61,13 @@ const Sidebar = () => {
         {/* Mobile icon */}
         <div className="relative xl:hidden">
           <Instagram className="w-7 h-7" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
-          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
+          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
         </div>
         {/* Desktop icon + text */}
         <div className="hidden xl:flex items-center gap-3">
           <div className="relative">
             <Instagram className="w-8 h-8" style={{ stroke: 'url(#story-gradient)' }} strokeWidth={2.2} />
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
+            <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] to-[hsl(45,100%,55%)]" />
           </div>
           <span className="text-2xl font-semibold bg-gradient-to-r from-[hsl(280,87%,65%)] via-[hsl(348,90%,55%)] via-[hsl(25,100%,55%)] to-[hsl(45,100%,55%)] bg-clip-text text-transparent">
             Instagram
